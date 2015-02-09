@@ -13,7 +13,7 @@ a way to kill node process from client navigator. Something like http://yoursite
 $ npm install kill-9
 ```
 
-## In de client navigator
+## Use it in de client navigator
 
 ![use kill-9 as a url in the navigator](docs/chromeKill-9.png)
 
@@ -34,16 +34,42 @@ app.use(kill9({log:true}));
 // complete example: 
 function site_up(req,res){
     var kill_url='kill-9?pid='+process.pid;
-    res.send("<h1>kill-9 demo</h1><p>this site now is up<p>try <a href="+kill_url+">"+kill_url+"</a>");
+    res.send("<h1>kill-9 demo</h1><p>site up<p>try <a href="+kill_url+">"+kill_url+"</a>");
 }
 
 app.get('/index.html',site_up);
 app.get('/',site_up);
 ```
 
-### kill9(options)
+### ``kill9([options])``
 
+Returns a function middleware to use with ``express.use``. 
+Once installed you can kill de process typing de "kill sentence" in the navigator.
+Example:
 
+```url
+http://thesite.kom/kill-9?pid=12345
+
+### ``options``
+
+#### statement *text default "kill-9"*
+
+The statement that you must type in de url. 
+
+#### pid *integer default process.pid*
+
+The pid value that you must pass in the pid parameter. 
+By default kill-9 uses de real pid obteined from ``pid`` property of ``process`` object: ``process.pid``
+
+#### pid *text default process.pid*
+
+The pid value that you must pass in the pid parameter. 
+By default kill-9 uses de real pid obteined from ``pid`` property of ``process`` object: ``process.pid``
+
+## Notes
+
+ + **This is not secure in production servers. Use it only in developer servers**. Kill-9 lacks of password or validate user or any way for confirm legal use.
+ + Actually options.pid can be a text, buy I don't know if this will change in the future. 
 
 ## License
 
