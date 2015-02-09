@@ -14,16 +14,18 @@ describe('kill9()', function(){
       server = createServer({
         exitCode:15,
         messageKilled:"yeah'killed",
-        process:{pid:444, exit:function(code){ killedExitCode = code; /* throw new Error('kill tested'); */ }}
+        process:{pid:444, exit:function(code){ killedExitCode = code; }}
       });
     });
 
     it('should kill if pid match', function(done){
       request(server)
       .get('/kill-9?pid=444')
-      .expect(200, "yeah'killed", function(){
+      .expect(200, "yeah'killed")
+      .end(function(err, res){
+        if (err) return done(err);
         assert.equal(killedExitCode,15);
-        done();
+        done()
       });
     });
 
@@ -61,17 +63,59 @@ describe('kill9()', function(){
   })
 
   describe('exceptional operations', function(){
-    it('must ensure locate for redirects', function(){
-      assert.throws(function(){ kill9({statusKilled:301}) }, /options.locate required/);
+    it('must ensure location for redirects', function(){
+      assert.throws(function(){ kill9({statusKilled:301}) }, /options.location required/);
     });
-    it('must ensure locate for bad redirects', function(){
-      assert.throws(function(){ kill9({statusBad:301}) }, /options.locateBad required/);
+    it('must ensure location for bad redirects', function(){
+      assert.throws(function(){ kill9({statusBad:301}) }, /options.locationBad required/);
     });
-    it('must ensure redirects if option locate present', function(){
-      assert.throws(function(){ kill9({locate:"other_site.kom"}) }, /options.locate is only for redirect/);
+    it('must ensure redirects if option location present', function(){
+      assert.throws(function(){ kill9({location:"other_site.kom"}) }, /options.location is only for redirect/);
     });
-    it('must ensure redirects if option locate present', function(){
-      assert.throws(function(){ kill9({locateBad:"other_site.kom"}) }, /options.locateBad is only for redirect/);
+    it('must ensure redirects if option location present', function(){
+      assert.throws(function(){ kill9({locationBad:"other_site.kom"}) }, /options.locationBad is only for redirect/);
+    });
+  });
+  
+  describe('redirect operations', function(){
+    var createRedirectServer;
+    before(function () {
+        createRedirectServer = function(reference){
+            return createServer({
+                exitCode:16,
+                process:{pid:555, exit:function(code){ reference.code = code; }},
+                statusKilled:300,
+                location:"other_site.kom/?killed=1",
+                statusBad:303,
+                locationBad:"other_site.kom/?killed=0"
+            });
+        };
+    });
+
+    it('should redirect killed', function(done){
+      var reference={};
+      request(createRedirectServer(reference))
+      .get('/kill-9?pid=555')
+      .expect('Location', 'other_site.kom/?killed=1')
+      .expect(300)
+      .end(function(err, res){
+        if (err) return done(err);
+        assert.equal(reference.code,16);
+        done();
+      });
+    });
+
+    it('should redirect bad kills', function(done){
+      var reference={code:'untouched'};
+      request(createRedirectServer(reference))
+      .get('/kill-9?pid=777')
+      .expect('Location', 'other_site.kom/?killed=0')
+      .expect(303)
+      .end(function(err, res){
+        if (err) return done(err);
+        assert.equal(reference.code,'untouched');
+        done();
+      });
     });
   });
 });
