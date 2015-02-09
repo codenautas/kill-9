@@ -106,6 +106,29 @@ The message to display when when the pid doesn't match.
 app.use(kill9({messageBad: "Not foud"}));
 ```
 
+#### process *object default process*
+
+The process option is for test purpose. You can pass a *mock object*. 
+
+```js
+function ProcessMock(){
+    this.pid=444;
+    this.codeRecived=null;
+    this.exit=function(code){
+        this.codeRecived=code;
+    }
+}
+
+var pm=new ProcessMock();
+test_app.use(
+    kill9({process:pm})
+).get(
+    'kill-9?pid=444'
+).then(function(){
+    assert.equal(mp.codeRecived, 444);
+});
+```
+
 ## Notes
 
  + **This is not secure in production servers. Use it only in developer servers**. Kill-9 lacks of password or validate user or any way for confirm legal use.
