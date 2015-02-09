@@ -145,7 +145,7 @@ test_app.use(
 [travis-url]: https://travis-ci.org/codenautas/kill-9
 [appveyor-image]: https://img.shields.io/appveyor/ci/emilioplatzer/kill-9/master.svg?label=windows&style=flat
 [appveyor-url]: https://ci.appveyor.com/project/emilioplatzer/kill-9
-[coveralls-image]: https://img.shields.io/coveralls/emilioplatzer/kill-9/master.svg?style=flat
-[coveralls-url]: https://coveralls.io/r/emilioplatzer/kill-9
+[coveralls-image]: https://img.shields.io/coveralls/codenautas/kill-9/master.svg?style=flat
+[coveralls-url]: https://coveralls.io/r/codenautas/kill-9
 [downloads-image]: https://img.shields.io/npm/dm/kill-9.svg?style=flat
 [downloads-url]: https://npmjs.org/package/kill-9
