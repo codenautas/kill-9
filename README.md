@@ -86,8 +86,6 @@ app.use(kill9({statusKilled:301, location:'other_site.kom'}));
 
 The location for a redirect. This is mandatory if statusKilled between 300 and 303. 
 
-**Not implemented yet**
-
 #### messageKilled *text default "kill -9 success"*
 
 The message to display in successful kills. 
@@ -98,6 +96,10 @@ app.use(kill9({messageKilled: "I'll be back"}));
 #### statusBad *integer default 404*
 
 The status sent when the pid doesn't match.
+
+#### locationBad *url*
+
+The location for a redirect. This is mandatory if statusKilled between 300 and 303. 
 
 #### messageBad *text default "kill -9 unknown"*
 
@@ -133,7 +135,6 @@ test_app.use(
 
  + **This is not secure in production servers. Use it only in developer servers**. Kill-9 lacks of password or validate user or any way for confirm legal use.
  + Actually options.pid can be a text, buy I don't know if this will change in the future. 
- + location option not implemented yet
  
 ## License
 
