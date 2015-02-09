@@ -20,6 +20,18 @@ exports = module.exports = function kill9(opts){
     var killer=express();
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
+    if(opts.statusKilled>=300 && opts.statusKilled<=303 && !('locate' in opts)){
+      throw new Error('kill-9: options.locate required');
+    };
+    if(opts.statusBad>=300 && opts.statusBad<=303 && !('locateBad' in opts)){
+      throw new Error('kill-9: options.locateBad required');
+    };
+    if(!(opts.statusKilled>=300 && opts.statusKilled<=303) && ('locate' in opts)){
+      throw new Error('kill-9: options.locate is only for redirect');
+    };
+    if(!(opts.statusBad>=300 && opts.statusBad<=303) && ('locateBad' in opts)){
+      throw new Error('kill-9: options.locateBad is only for redirect');
+    };
     if(opts.log){
         console.log('kill-9 installed. '+opts.log);
         if(!opts.pid){

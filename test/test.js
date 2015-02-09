@@ -65,10 +65,13 @@ describe('kill9()', function(){
       assert.throws(function(){ kill9({statusKilled:301}) }, /options.locate required/);
     });
     it('must ensure locate for bad redirects', function(){
-      assert.throws(function(){ kill9({statusBad:301}) }, /options.locate required/);
+      assert.throws(function(){ kill9({statusBad:301}) }, /options.locateBad required/);
     });
     it('must ensure redirects if option locate present', function(){
       assert.throws(function(){ kill9({locate:"other_site.kom"}) }, /options.locate is only for redirect/);
+    });
+    it('must ensure redirects if option locate present', function(){
+      assert.throws(function(){ kill9({locateBad:"other_site.kom"}) }, /options.locateBad is only for redirect/);
     });
   });
 });
