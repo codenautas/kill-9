@@ -49,6 +49,7 @@ Example:
 
 ```url
 http://thesite.kom/kill-9?pid=12345
+```
 
 ### ``options``
 
@@ -65,6 +66,23 @@ By default kill-9 uses de real pid obteined from ``pid`` property of ``process``
 
 The pid value that you must pass in the pid parameter. 
 By default kill-9 uses de real pid obteined from ``pid`` property of ``process`` object: ``process.pid``
+
+#### log *boolean default false*
+
+If log is set kill-9 show a console.log when it is installed. You can send true or a message.
+
+```js
+app.use(kill9({log:"remember to delete in production"}));
+
+// Supose that exists getMode(). This is better
+if(getMode()=='develop'){
+    app.use(kill9({log:true}));
+}
+```
+
+#### statusKilled *integer default 200*
+
+The status sent in de response for the case of success.
 
 ## Notes
 
