@@ -41,7 +41,7 @@ app.get('/index.html',site_up);
 app.get('/',site_up);
 ```
 
-### ``kill9([options])``
+### kill9([options])
 
 Returns a function middleware to use with ``express.use``. 
 Once installed you can kill de process typing de "kill sentence" in the navigator.
@@ -51,18 +51,13 @@ Example:
 http://thesite.kom/kill-9?pid=12345
 ```
 
-### ``options``
+### options
 
 #### statement *text default "kill-9"*
 
 The statement that you must type in de url. 
 
 #### pid *integer default process.pid*
-
-The pid value that you must pass in the pid parameter. 
-By default kill-9 uses de real pid obteined from ``pid`` property of ``process`` object: ``process.pid``
-
-#### pid *text default process.pid*
 
 The pid value that you must pass in the pid parameter. 
 By default kill-9 uses de real pid obteined from ``pid`` property of ``process`` object: ``process.pid``
@@ -82,21 +77,49 @@ if(getMode()=='develop'){
 
 #### statusKilled *integer default 200*
 
-The status sent in de response for the case of success.
+The status sent in the response for the case of success.
+```js
+app.use(kill9({statusKilled:301, location:'other_site.kom'}));
+```
+
+#### location *url*
+
+The location for a redirect. This is mandatory if statusKilled between 300 and 303. 
+
+**Not implemented yet**
+
+#### messageKilled *text default "kill -9 success"*
+
+The message to display in successful kills. 
+```js
+app.use(kill9({messageKilled: "I'll be back"}));
+```
+
+#### statusBad *integer default 404*
+
+The status sent when the pid doesn't match.
+
+#### messageBad *text default "kill -9 unknown"*
+
+The message to display when when the pid doesn't match.
+```js
+app.use(kill9({messageBad: "Not foud"}));
+```
 
 ## Notes
 
  + **This is not secure in production servers. Use it only in developer servers**. Kill-9 lacks of password or validate user or any way for confirm legal use.
  + Actually options.pid can be a text, buy I don't know if this will change in the future. 
-
+ + location option not implemented yet
+ 
 ## License
 
 [GPL-2.0](LICENSE)
 
 [npm-image]: https://img.shields.io/npm/v/kill-9.svg?style=flat
 [npm-url]: https://npmjs.org/package/kill-9
-[travis-image]: https://img.shields.io/travis/emilioplatzer/kill-9/master.svg?label=linux&style=flat
-[travis-url]: https://travis-ci.org/emilioplatzer/kill-9
+[travis-image]: https://img.shields.io/travis/codenautas/kill-9/master.svg?label=linux&style=flat
+[travis-url]: https://travis-ci.org/codenautas/kill-9
 [appveyor-image]: https://img.shields.io/appveyor/ci/emilioplatzer/kill-9/master.svg?label=windows&style=flat
 [appveyor-url]: https://ci.appveyor.com/project/emilioplatzer/kill-9
 [coveralls-image]: https://img.shields.io/coveralls/emilioplatzer/kill-9/master.svg?style=flat
