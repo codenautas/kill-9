@@ -4,7 +4,6 @@ a way to kill node process from client navigator. Something like http://yoursite
 [![version](https://img.shields.io/npm/v/kill-9.svg)](https://npmjs.org/package/kill-9)
 [![downloads](https://img.shields.io/npm/dm/kill-9.svg)](https://npmjs.org/package/kill-9)
 [![linux](https://img.shields.io/travis/codenautas/kill-9/master.svg)](https://travis-ci.org/codenautas/kill-9)
-[![Windows Build][appveyor-image]][appveyor-url]
 [![coverage](https://img.shields.io/coveralls/codenautas/kill-9/master.svg)](https://coveralls.io/r/codenautas/kill-9)
 [![dependencies](https://img.shields.io/david/codenautas/kill-9.svg)](https://david-dm.org/codenautas/kill-9)
 
@@ -141,6 +140,4 @@ test_app.use(
 
 [GPL-2.0](LICENSE)
 
-[appveyor-image]: https://img.shields.io/appveyor/ci/emilioplatzer/kill-9/master.svg?label=windows&style=flat
-[appveyor-url]: https://ci.appveyor.com/project/emilioplatzer/kill-9
 
