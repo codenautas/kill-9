@@ -1,16 +1,17 @@
 {
   "name": "kill-9",
   "description": "A way for kill node server from client navigator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Emilio Platzer <emilioplatzer@outlook.com>",
   "license": "GPL-2.0",
   "repository": "codenautas/kill-9",
+  "main": "kill-9.js",
   "dependencies": {
-    "express": ""
+    "express": ">=4.12.3"
   },
   "devDependencies": {
-    "istanbul": "0.3.5",
-    "mocha": "~2.1.0",
+    "istanbul": "0.3.13",
+    "mocha": "~2.2.4",
     "supertest": "~0.15.0"
   },
   "files": [

@@ -4,6 +4,8 @@
  * GNU Licensed
  */
 
+"use strict";
+ 
 /**
  * Module dependencies.
  */
@@ -16,38 +18,36 @@ var express = require('express');
  * @api public
  */
 
-exports = module.exports = function kill9(opts){
+var kill9 = exports = module.exports = function kill9(opts){
     var killer=express();
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
-    if(opts.statusKilled>=300 && opts.statusKilled<=303 && !('location' in opts)){
+    if(kill9.isRedirectCode(opts.statusKilled) && !('location' in opts)){
         throw new Error('kill-9: options.location required');
     };
-    if(opts.statusBad>=300 && opts.statusBad<=303 && !('locationBad' in opts)){
+    if(kill9.isRedirectCode(opts.statusBad) && !('locationBad' in opts)){
         throw new Error('kill-9: options.locationBad required');
     };
-    if(!(opts.statusKilled>=300 && opts.statusKilled<=303) && ('location' in opts)){
+    if(!kill9.isRedirectCode(opts.statusKilled) && ('location' in opts)){
         throw new Error('kill-9: options.location is only for redirect');
     };
-    if(!(opts.statusBad>=300 && opts.statusBad<=303) && ('locationBad' in opts)){
+    if(!kill9.isRedirectCode(opts.statusBad) && ('locationBad' in opts)){
         throw new Error('kill-9: options.locationBad is only for redirect');
     };
     if(opts.log){
         console.log('kill-9 installed. '+opts.log);
-        if(!opts.pid){
-            console.log('pid='+pid);
-        }
+        console.log('pid='+pid);
     }
     killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
         if(req.query.pid==pid){
-            res.status(opts.statusKilled||200);
+            res.status(opts.statusKilled||kill9.defaults.statusKilled);
             if(opts.location){
                 res.header('Location',opts.location);
             }
             res.send(opts.messageKilled||'kill -9 success');
-            _process.exit(opts.exitCode||0);
+            _process.exit(opts.exitCode||kill9.defaults.exitCode);
         }else{
-            res.status(opts.statusBad||404);
+            res.status(opts.statusBad||kill9.defaults.statusBad);
             if(opts.locationBad){
                 res.header('Location',opts.locationBad);
             }
@@ -55,4 +55,14 @@ exports = module.exports = function kill9(opts){
         }
     });
     return killer;
-}
+};
+
+kill9.defaults={
+    statusKilled:200,
+    exitCode:0,
+    statusBad:404
+};
+
+kill9.isRedirectCode = function isRedirectCode(htmlCode){
+    return htmlCode>=300 && htmlCode<=303;
+};

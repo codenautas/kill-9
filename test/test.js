@@ -81,8 +81,8 @@ describe('kill9()', function(){
     var createRedirectServer;
     before(function () {
         createRedirectServer = function(reference){
+            kill9.defaults.exitCode=999;
             return createServer({
-                exitCode:16,
                 process:{pid:555, exit:function(code){ reference.code = code; }},
                 statusKilled:300,
                 location:"other_site.kom/?killed=1",
@@ -100,7 +100,7 @@ describe('kill9()', function(){
       .expect(300)
       .end(function(err, res){
         if (err) return done(err);
-        assert.equal(reference.code,16);
+        assert.equal(reference.code,999);
         done();
       });
     });
