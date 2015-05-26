@@ -1,7 +1,7 @@
 {
   "name": "kill-9",
   "description": "A way for kill node server from client navigator",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "Emilio Platzer <emilioplatzer@outlook.com>",
   "license": "GPL-2.0",
   "repository": "codenautas/kill-9",
@@ -14,11 +14,6 @@
     "mocha": "~2.2.4",
     "supertest": "~0.15.0"
   },
-  "files": [
-    "LICENSE",
-    "HISTORY.md",
-    "index.js"
-  ],
   "engines": {
     "node": ">= 0.8.0"
   },
