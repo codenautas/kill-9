@@ -21,6 +21,7 @@ describe('kill9()', function(){
     it('should kill if pid match', function(done){
       request(server)
       .get('/kill-9?pid=444')
+      .expect('Content-Type', 'text/plain; charset=utf-8')
       .expect(200, "yeah'killed")
       .end(function(err, res){
         if (err) return done(err);
@@ -32,6 +33,7 @@ describe('kill9()', function(){
     it('should not kill if pid not match', function(done){
       request(server)
       .get('/kill-9?pid=99')
+      .expect('Content-Type', 'text/plain; charset=utf-8')
       .expect(404, 'kill -9 unknown', done);
     });
 

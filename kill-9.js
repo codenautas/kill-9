@@ -43,15 +43,19 @@ var kill9 = exports = module.exports = function kill9(opts){
             res.status(opts.statusKilled||kill9.defaults.statusKilled);
             if(opts.location){
                 res.header('Location',opts.location);
+            }else{
+                res.header('Content-Type', 'text/plain; charset=utf-8');
             }
-            res.send(opts.messageKilled||'kill -9 success');
+            res.end(opts.messageKilled||'kill -9 success');
             _process.exit(opts.exitCode||kill9.defaults.exitCode);
         }else{
             res.status(opts.statusBad||kill9.defaults.statusBad);
             if(opts.locationBad){
                 res.header('Location',opts.locationBad);
+            }else{
+                res.header('Content-Type', 'text/plain; charset=utf-8');
             }
-            res.send(opts.messageBad||'kill -9 unknown');
+            res.end(opts.messageBad||'kill -9 unknown');
         }
     });
     return killer;
