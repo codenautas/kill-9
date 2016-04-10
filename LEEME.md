@@ -2,17 +2,22 @@
 # kill-9
 <!--lang:es-->
 un modo de matar el proceso **node** desde el navegador. Algo así como http://yoursite.kom/kill-9
+
 <!--lang:en--]
 a way to kill node process from client navigator. Something like http://yoursite.kom/kill-9
 
 [!--lang:*-->
 
 <!-- cucardas -->
-[![version](https://img.shields.io/npm/v/kill-9.svg)](https://npmjs.org/package/kill-9)
+![extending](https://img.shields.io/badge/stability-extending-orange.svg)
+[![npm-version](https://img.shields.io/npm/v/kill-9.svg)](https://npmjs.org/package/kill-9)
 [![downloads](https://img.shields.io/npm/dm/kill-9.svg)](https://npmjs.org/package/kill-9)
-[![build](https://img.shields.io/travis/codenautas/kill-9/master.svg)](https://travis-ci.org/codenautas/kill-9)
+[![linux](https://img.shields.io/travis/codenautas/kill-9/master.svg)](https://travis-ci.org/codenautas/kill-9)
+[![windows](https://ci.appveyor.com/api/projects/status/github/codenautas/kill-9?svg=true)](https://ci.appveyor.com/project/codenautas/kill-9)
 [![coverage](https://img.shields.io/coveralls/codenautas/kill-9/master.svg)](https://coveralls.io/r/codenautas/kill-9)
+[![climate](https://img.shields.io/codeclimate/github/codenautas/kill-9.svg)](https://codeclimate.com/github/codenautas/kill-9)
 [![dependencies](https://img.shields.io/david/codenautas/kill-9.svg)](https://david-dm.org/codenautas/kill-9)
+[![qa-control](http://codenautas.com/github/codenautas/kill-9.svg)](http://codenautas.com/github/codenautas/kill-9)
 
 <!--multilang buttons-->
 
@@ -158,6 +163,15 @@ test_app.use(
     assert.equal(mp.codeRecived, 444);
 });
 ```
+<!--lang:es-->
+
+## Notas
+
+ + **No es seguro para poner en un server en producción.** Kill-9 no valida el usuario ni confirma la instrucción
+   + puede usarse junto con [login-plus](npmjs.org/package/login-plus) o algún otro middleware que valide el usuario (lo que tiene el defecto de no poder matar el proceso si el mecanismo de validación de usuarios está fallando)
+ + Actualmente options.pid puede ser un texto, esto podría cambiar en futuras versiones. 
+ 
+<!--lang:en--]
 
 ## Notes
 

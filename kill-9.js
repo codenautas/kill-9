@@ -1,39 +1,28 @@
-/*!
- * kill-9
- * 2015 Emilio Platzer
- * GNU Licensed
- */
-
 "use strict";
- 
-/**
- * Module dependencies.
- */
+/*jshint eqnull:true */
+/*jshint node:true */
+/*eslint-disable no-console */
+
+var kill9 = {};
 
 var express = require('express');
 
-/**
- * @param {Object} opts
- * @return {Function}
- * @api public
- */
-
-var kill9 = exports = module.exports = function kill9(opts){
+kill9 = function kill9(opts){
     var killer=express();
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
     if(kill9.isRedirectCode(opts.statusKilled) && !('location' in opts)){
         throw new Error('kill-9: options.location required');
-    };
+    }
     if(kill9.isRedirectCode(opts.statusBad) && !('locationBad' in opts)){
         throw new Error('kill-9: options.locationBad required');
-    };
+    }
     if(!kill9.isRedirectCode(opts.statusKilled) && ('location' in opts)){
         throw new Error('kill-9: options.location is only for redirect');
-    };
+    }
     if(!kill9.isRedirectCode(opts.statusBad) && ('locationBad' in opts)){
         throw new Error('kill-9: options.locationBad is only for redirect');
-    };
+    }
     if(opts.log){
         console.log('kill-9 installed. '+opts.log);
         console.log('pid='+pid);
@@ -70,3 +59,5 @@ kill9.defaults={
 kill9.isRedirectCode = function isRedirectCode(htmlCode){
     return htmlCode>=300 && htmlCode<=303;
 };
+
+module.exports = kill9;
