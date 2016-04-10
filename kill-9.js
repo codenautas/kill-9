@@ -11,18 +11,16 @@ kill9 = function kill9(opts){
     var killer=express();
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
-    if(kill9.isRedirectCode(opts.statusKilled) && !('location' in opts)){
-        throw new Error('kill-9: options.location required');
-    }
-    if(kill9.isRedirectCode(opts.statusBad) && !('locationBad' in opts)){
-        throw new Error('kill-9: options.locationBad required');
-    }
-    if(!kill9.isRedirectCode(opts.statusKilled) && ('location' in opts)){
-        throw new Error('kill-9: options.location is only for redirect');
-    }
-    if(!kill9.isRedirectCode(opts.statusBad) && ('locationBad' in opts)){
-        throw new Error('kill-9: options.locationBad is only for redirect');
-    }
+    [ 
+        { statusOpt:'statusKilled', locationOpt:'location'    },
+        { statusOpt:'statusBad'   , locationOpt:'locationBad' },
+    ].forEach(function(info){
+        var is=kill9.isRedirectCode(opts[info.statusOpt]);
+        var has=(info.locationOpt in opts);
+        if(is!==has){
+            throw new Error('kill-9: options.'+info.locationOpt+(has?' is only for redirect':' required'));
+        }
+    });
     if(opts.log){
         console.log('kill-9 installed. '+opts.log);
         console.log('pid='+pid);
