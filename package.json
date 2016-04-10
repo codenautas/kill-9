@@ -1,11 +1,12 @@
 {
   "name": "kill-9",
   "description": "A way for kill node server from client navigator",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "Emilio Platzer <emilioplatzer@outlook.com>",
   "license": "GPL-2.0",
   "repository": "codenautas/kill-9",
   "main": "kill-9.js",
+  "files": [ "kill-9.js", "docs", "LEEME.md" ],
   "dependencies": {
     "express": "~4.13.4"
   },

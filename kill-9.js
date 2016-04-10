@@ -7,6 +7,16 @@ var kill9 = {};
 
 var express = require('express');
 
+function sendFeedback(res, status, location, message){
+    res.status(status);
+    if(location){
+        res.header('Location',location);
+    }else{
+        res.header('Content-Type', 'text/plain; charset=utf-8');
+    }
+    res.end(message);
+}
+
 kill9 = function kill9(opts){
     var killer=express();
     var _process=opts.process || process;
@@ -24,15 +34,6 @@ kill9 = function kill9(opts){
     if(opts.log){
         console.log('kill-9 installed. '+opts.log);
         console.log('pid='+pid);
-    }
-    var sendFeedback = function sendFeedback(res, status, location, message){
-        res.status(status);
-        if(location){
-            res.header('Location',location);
-        }else{
-            res.header('Content-Type', 'text/plain; charset=utf-8');
-        }
-        res.end(message);
     }
     killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
         if(req.query.pid==pid){
