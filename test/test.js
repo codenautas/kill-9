@@ -6,15 +6,19 @@ var kill9 = require('..');
 var killedExitCode=false;
 
 describe('kill9()', function(){
-  function createPostForm(exclude) {
+  function createPostForm(exVar) {
       var obj = {
         'masterpass':'secret',
         'submit':'Ok',
         'params':JSON.stringify(kill9.postParams),
         'confirmTimeout':(new Date().getTime()+60*1000).toString()
      };
-     if(exclude) {
-        exclude.forEach(function(prop) { delete obj[prop]; });
+     if(exVar) {
+         if(exVar.value !== '') {
+             obj[exVar.name] = exVar.value;
+         } else {
+             delete obj[exVar.name];
+         }
      }
      return obj;
   }
@@ -82,16 +86,21 @@ describe('kill9()', function(){
       });
     });
     
-    ['masterpass'].forEach(function(wrongVar) {
-        it('should fail if form variable "'+wrongVar+'" missing', function(done){
+  [
+    {name:'masterpass', err:'tainted vars'},
+    {name:'params', err:'tainted content', value:'asdfasdflñj-asdf'},
+    {name:'confirmTimeout', err:'request timeout', value:'0'},
+    {name:'masterpass', err:'authentication error', value:'not a secret'}
+  ].forEach(function(wrongVar) {
+        it('should fail with wrong form variable "'+wrongVar.name+'"', function(done){
           request(server)
           .get('/kill-9?pid=444')
           .end(function(err, res){
               if(err) { return done(err); }
               request(server)
               .post('/kill-9')
-              .send(createPostForm([wrongVar]))
-              .expect(404, "kill -9 tainted vars")
+              .send(createPostForm(wrongVar))
+              .expect(404, "kill -9 "+wrongVar.err)
               .end(function(err, res){
                     if (err) { return done(err); }
                     done();
