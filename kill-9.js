@@ -6,6 +6,8 @@
 var kill9 = {};
 
 var express = require('express');
+var crypto = require('crypto');
+var bodyParser = require('body-parser');
 
 function sendFeedback(res, status, location, message){
     res.status(status);
@@ -19,6 +21,9 @@ function sendFeedback(res, status, location, message){
 
 kill9 = function kill9(opts){
     var killer=express();
+    killer.use(bodyParser.json());
+    killer.use(bodyParser.urlencoded({extended:true}));
+    if(! ('masterPass' in opts)) { throw new Error('kill-9: options.materPass is required'); }
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
     [ 
@@ -35,8 +40,41 @@ kill9 = function kill9(opts){
         console.log('kill-9 installed. '+opts.log);
         console.log('pid='+pid);
     }
+    var locationPost = '/'+(opts.locationPost||'kill-9');
     killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
         if(req.query.pid==pid){
+            var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
+            var postParams = Math.random().toString()+'|'+crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex');
+            res.header('Content-Type', 'text/html; charset=utf-8');
+            var html = '<form method="post" action="'+locationPost+'">\n'+
+                       (opts.messageConfirm || 'confirm kill-9')+'<br>\n'+
+                       '<input type="password" name="masterpass"  autofocus /><br>\n'+
+                       '<input type="submit" name="submit" value="'+(opts.messageSubmit||'Ok')+'"/><br>\n'+
+                       '<input type="hidden" name="params" value="'+postParams+'"/><br>\n'+
+                       '<input type="hidden" name="confirmTimeout" value="'+confirmTimeout+'"/><br>\n'+
+                       '</form>';
+            res.end(html);
+        }else{
+            sendFeedback(
+                res, 
+                opts.statusBad||kill9.defaults.statusBad,
+                opts.locationBad,
+                opts.messageBad||'kill -9 unknown'
+            );
+        }
+    });
+    killer.post(locationPost, function(req,res){
+        try { console.log(req.body); } catch(e) { console.log("post error", e); }
+        try {
+            var vars = req.body;
+            ['masterpass', 'submit', 'params', 'confirmTimeout'].forEach(function(pVar) {
+                if(!(pVar in vars)) {
+                    throw new Error('tainted content');
+                }
+            });
+            var timeout = new Date().getTime();
+            if(timeout > parseInt(vars.confirmTimeout)) { throw new Error('request timeout'); }
+            if(vars.masterpass !== opts.masterPass) { throw new Error('authentication error'); }
             sendFeedback(
                 res, 
                 opts.statusKilled||kill9.defaults.statusKilled, 
@@ -44,12 +82,12 @@ kill9 = function kill9(opts){
                 opts.messageKilled||'kill -9 success'
             );
             _process.exit(opts.exitCode||kill9.defaults.exitCode);
-        }else{
+        } catch(e) {
             sendFeedback(
                 res, 
                 opts.statusBad||kill9.defaults.statusBad,
                 opts.locationBad,
-                opts.messageBad||'kill -9 unknown'
+                'kill -9 '+e.message
             );
         }
     });

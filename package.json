@@ -8,6 +8,7 @@
   "main": "kill-9.js",
   "files": [ "kill-9.js", "docs", "LEEME.md" ],
   "dependencies": {
+    "body-parser": "1.15.0",
     "express": "~4.13.4"
   },
   "devDependencies": {

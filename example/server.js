@@ -15,5 +15,5 @@ function site_up(req,res){
 app.get('/index.html',site_up);
 app.get('/',site_up);
 
-app.use(kill9({log:true}));
+app.use(kill9({log:true, masterPass:'secret101'}));
 
