@@ -6,6 +6,14 @@ var kill9 = require('..');
 var killedExitCode=false;
 
 describe('kill9()', function(){
+  function createPostForm() {
+      return {
+        'masterpass':'secret',
+        'submit':'Ok',
+        'params':JSON.stringify(kill9.postParams),
+        'confirmTimeout':(new Date().getTime()+60*1000).toString()
+     };
+  }
   describe('basic operations', function(){
     var server;
     before(function () {
@@ -23,20 +31,16 @@ describe('kill9()', function(){
       .get('/kill-9?pid=444')
       .expect('Content-Type', 'text/html; charset=utf-8')
       .end(function(err, res){
-          if (err) { return done(err); }
+          if(err) { return done(err); }
           request(server)
           .post('/kill-9')
-          .send({
-            'masterpass':'secret',
-            'submit':'Ok',
-            'params':JSON.stringify(kill9.postParams),
-            'confirmTimeout':(new Date().getTime()+60*1000).toString()})
-         .expect('Content-Type', 'text/plain; charset=utf-8')
-         .expect(200, "yeah'killed")
-         .end(function(err, res){
-            if (err) { return done(err); }
-            assert.equal(killedExitCode,15);
-            done()
+          .send(createPostForm())
+          .expect('Content-Type', 'text/plain; charset=utf-8')
+          .expect(200, "yeah'killed")
+          .end(function(err, res){
+                if (err) { return done(err); }
+                assert.equal(killedExitCode,15);
+                done();
           });
       });
     });
@@ -93,7 +97,7 @@ describe('kill9()', function(){
     });
   });
   
-  describe.skip('redirect operations', function(){
+  describe('redirect operations', function(){
     var createRedirectServer;
     before(function () {
         createRedirectServer = function(reference){
@@ -113,15 +117,20 @@ describe('kill9()', function(){
       var reference={};
       request(createRedirectServer(reference))
       .get('/kill-9?pid=555')
-      .expect('Location', 'other_site.kom/?killed=1')
-      .expect(300)
       .end(function(err, res){
-        if (err) return done(err);
-        assert.equal(reference.code,999);
-        done();
+          if(err) { return done(err); }
+          request(createRedirectServer(reference))
+          .post('/kill-9')
+          .send(createPostForm())
+          .expect('Location', 'other_site.kom/?killed=1')
+          .expect(300)
+          .end(function(err, res){
+                if (err) { return done(err); }
+                assert.equal(reference.code,999);
+                done();
+          });
       });
     });
-
     it('should redirect bad kills', function(done){
       var reference={code:'untouched'};
       request(createRedirectServer(reference))
