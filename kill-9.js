@@ -23,7 +23,6 @@ kill9 = function kill9(opts){
     var killer=express();
     killer.use(bodyParser.json());
     killer.use(bodyParser.urlencoded({extended:true}));
-    if(! ('masterPass' in opts)) { throw new Error('kill-9: options.materPass is required'); }
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
     [ 
@@ -36,6 +35,7 @@ kill9 = function kill9(opts){
             throw new Error('kill-9: options.'+info.locationOpt+(has?' is only for redirect':' required'));
         }
     });
+    if(! ('masterPass' in opts)) { throw new Error('kill-9: options.materPass is required'); }
     if(opts.log){
         console.log('kill-9 installed. '+opts.log);
         console.log('pid='+pid);
