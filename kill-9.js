@@ -44,14 +44,14 @@ kill9 = function kill9(opts){
     killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
         if(req.query.pid==pid){
             var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
-            var postParams = Math.random().toString()+'|'+crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex');
+            kill9.postParams = {random:Math.random(), hash:crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex')};
             res.header('Content-Type', 'text/html; charset=utf-8');
             var html = '<form method="post" action="'+locationPost+'">\n'+
                        (opts.messageConfirm || 'confirm kill-9')+'<br>\n'+
                        '<input type="password" name="masterpass"  autofocus /><br>\n'+
-                       '<input type="submit" name="submit" value="'+(opts.messageSubmit||'Ok')+'"/><br>\n'+
-                       '<input type="hidden" name="params" value="'+postParams+'"/><br>\n'+
-                       '<input type="hidden" name="confirmTimeout" value="'+confirmTimeout+'"/><br>\n'+
+                       '<input type="submit" name="submit" value="'+(opts.messageSubmit||'Ok')+'" /><br>\n'+
+                       '<input type="hidden" name="params" value=\''+JSON.stringify(kill9.postParams)+'\' /><br>\n'+
+                       '<input type="hidden" name="confirmTimeout" value="'+confirmTimeout+'" /><br>\n'+
                        '</form>';
             res.end(html);
         }else{
@@ -64,14 +64,13 @@ kill9 = function kill9(opts){
         }
     });
     killer.post(locationPost, function(req,res){
-        try { console.log(req.body); } catch(e) { console.log("post error", e); }
+        //try { console.log(req.body); } catch(e) { console.log("post error", e); }
         try {
             var vars = req.body;
             ['masterpass', 'submit', 'params', 'confirmTimeout'].forEach(function(pVar) {
-                if(!(pVar in vars)) {
-                    throw new Error('tainted content');
-                }
+                if(!(pVar in vars)) { throw new Error('tainted vars'); }
             });
+            if(JSON.stringify(kill9.postParams) != vars.params) { throw new Error('tainted content'); }
             var timeout = new Date().getTime();
             if(timeout > parseInt(vars.confirmTimeout)) { throw new Error('request timeout'); }
             if(vars.masterpass !== opts.masterPass) { throw new Error('authentication error'); }

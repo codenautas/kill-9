@@ -3,10 +3,9 @@ var assert = require('assert');
 var http = require('http');
 var request = require('supertest');
 var kill9 = require('..');
-
 var killedExitCode=false;
 
-describe.skip('kill9()', function(){
+describe('kill9()', function(){
   describe('basic operations', function(){
     var server;
     before(function () {
@@ -18,16 +17,25 @@ describe.skip('kill9()', function(){
         process:{pid:444, exit:function(code){ killedExitCode = code; }}
       });
     });
-
-    it('should kill if pid match', function(done){
+    it.only('should kill if pid match', function(done){
       request(server)
       .get('/kill-9?pid=444')
-      .expect('Content-Type', 'text/plain; charset=utf-8')
-      .expect(200, "yeah'killed")
+      .expect('Content-Type', 'text/html; charset=utf-8')
       .end(function(err, res){
-        if (err) return done(err);
-        assert.equal(killedExitCode,15);
-        done()
+          request(server)
+          .post('/kill-9')
+          .send({
+            'masterpass':'secret',
+            'submit':'Ok',
+            'params':JSON.stringify(kill9.postParams),
+            'confirmTimeout':(new Date().getTime()+60*1000).toString()})
+         .expect('Content-Type', 'text/plain; charset=utf-8')
+         .expect(200, "yeah'killed")
+         .end(function(err, res){
+            if (err) return done(err);
+            assert.equal(killedExitCode,15);
+            done()
+          });
       });
     });
 
