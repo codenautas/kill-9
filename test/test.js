@@ -6,13 +6,17 @@ var kill9 = require('..');
 var killedExitCode=false;
 
 describe('kill9()', function(){
-  function createPostForm() {
-      return {
+  function createPostForm(exclude) {
+      var obj = {
         'masterpass':'secret',
         'submit':'Ok',
         'params':JSON.stringify(kill9.postParams),
         'confirmTimeout':(new Date().getTime()+60*1000).toString()
      };
+     if(exclude) {
+        exclude.forEach(function(prop) { delete obj[prop]; });
+     }
+     return obj;
   }
   describe('basic operations', function(){
     var server;
@@ -76,6 +80,24 @@ describe('kill9()', function(){
         "kill-9 installed. true":1,
         "pid=444":1
       });
+    });
+    
+    ['masterpass'].forEach(function(wrongVar) {
+        it('should fail if form variable "'+wrongVar+'" missing', function(done){
+          request(server)
+          .get('/kill-9?pid=444')
+          .end(function(err, res){
+              if(err) { return done(err); }
+              request(server)
+              .post('/kill-9')
+              .send(createPostForm([wrongVar]))
+              .expect(404, "kill -9 tainted vars")
+              .end(function(err, res){
+                    if (err) { return done(err); }
+                    done();
+              });
+          });
+        });
     });
   })
 
