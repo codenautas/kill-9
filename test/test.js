@@ -88,6 +88,9 @@ describe('kill9()', function(){
     it('must ensure redirects if option location present', function(){
       assert.throws(function(){ kill9({locationBad:"other_site.kom"}) }, /options.locationBad is only for redirect/);
     });
+    it('must fail if no masterPass is provided', function(){
+      assert.throws(function(){ kill9({}) }, /options.materPass is required/);
+    });
   });
   
   describe.skip('redirect operations', function(){
