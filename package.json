@@ -25,6 +25,10 @@
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
     "start": "node example/server.js"
   },
+  "files": [
+    "kill-9.js",
+    "example"
+    ],
   "jshintConfig": {
     "asi": false,
     "forin": true,
