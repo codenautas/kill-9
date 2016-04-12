@@ -41,18 +41,27 @@ kill9 = function kill9(opts){
         console.log('pid='+pid);
     }
     var locationPost = '/'+(opts.locationPost||'kill-9');
+    killer.use(express.static(__dirname+'/dist/'));
     killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
         if(req.query.pid==pid){
             var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
             kill9.postParams = {random:Math.random(), hash:crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex')};
             res.header('Content-Type', 'text/html; charset=utf-8');
-            var html = '<form method="post" action="'+locationPost+'">\n'+
+            var html = '<html><body>\n'+
+                       '<script type="text/javascript" src="/md5.js"></script>\n'+
+                       '<form method="post" action="'+locationPost+'">\n'+
                        (opts.messageConfirm || 'confirm kill-9')+'<br>\n'+
-                       '<input type="password" name="masterpass"  autofocus /><br>\n'+
+                       '<input id="masterpass_in" type="password" name="masterpass_in"  autofocus /><br>\n'+
+                       '<input id="masterpass" type="hidden" name="masterpass"  autofocus /><br>\n'+
                        '<input type="submit" name="submit" value="'+(opts.messageSubmit||'Ok')+'" /><br>\n'+
                        '<input type="hidden" name="params" value=\''+JSON.stringify(kill9.postParams)+'\' /><br>\n'+
                        '<input type="hidden" name="confirmTimeout" value="'+confirmTimeout+'" /><br>\n'+
-                       '</form>';
+                       '</form>\n'+
+                       '<script type="text/javascript">'+
+                       'document.getElementById("masterpass_in").onblur = function() { '+
+                       'document.getElementById("masterpass").value = CryptoJS.MD5(this.value); }'+
+                       '</script>\n'+
+                       '</body></html>';
             res.end(html);
         }else{
             sendFeedback(
@@ -73,7 +82,9 @@ kill9 = function kill9(opts){
             if(JSON.stringify(kill9.postParams) != vars.params) { throw new Error('tainted content'); }
             var timeout = new Date().getTime();
             if(timeout > parseInt(vars.confirmTimeout)) { throw new Error('request timeout'); }
-            if(vars.masterpass !== opts.masterPass) { throw new Error('authentication error'); }
+            var masterpassHash = crypto.createHash('md5').update(opts.masterPass).digest('hex');
+            //console.log("posted pass", vars.masterpass, "masterpassHash", masterpassHash);
+            if(vars.masterpass !== masterpassHash) { throw new Error('authentication error'); }
             sendFeedback(
                 res, 
                 opts.statusKilled||kill9.defaults.statusKilled, 

@@ -4,11 +4,12 @@ var http = require('http');
 var request = require('supertest');
 var kill9 = require('..');
 var killedExitCode=false;
+var crypto = require('crypto');
 
 describe('kill9()', function(){
   function createPostForm(exVar) {
       var obj = {
-        'masterpass':'secret',
+        'masterpass':crypto.createHash('md5').update('secret').digest('hex'),
         'submit':'Ok',
         'params':JSON.stringify(kill9.postParams),
         'confirmTimeout':(new Date().getTime()+60*1000).toString()

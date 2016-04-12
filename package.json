@@ -27,7 +27,8 @@
   },
   "files": [
     "kill-9.js",
-    "example"
+    "example",
+    "dist"
     ],
   "jshintConfig": {
     "asi": false,
