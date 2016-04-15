@@ -8,6 +8,7 @@ var kill9 = {};
 var express = require('express');
 var crypto = require('crypto');
 var bodyParser = require('body-parser');
+var packageJson = require('./package.json');
 
 function sendFeedback(res, status, location, message){
     res.status(status);
@@ -23,6 +24,10 @@ kill9 = function kill9(opts){
     var killer=express();
     killer.use(bodyParser.json());
     killer.use(bodyParser.urlencoded({extended:true}));
+    if(opts.log){
+        console.log('kill-9 installed: '+opts.log+' v'+packageJson.version);
+        console.log('pid='+pid);
+    }
     var _process=opts.process || process;
     var pid=opts.pid || _process.pid;
     [ 
@@ -36,10 +41,6 @@ kill9 = function kill9(opts){
         }
     });
     if(! ('masterPass' in opts)) { throw new Error('kill-9: options.materPass is required'); }
-    if(opts.log){
-        console.log('kill-9 installed. '+opts.log);
-        console.log('pid='+pid);
-    }
     var locationPost = '/'+(opts.locationPost||'kill-9');
     killer.use(express.static(__dirname+'/dist/'));
     killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
