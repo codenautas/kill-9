@@ -7,7 +7,6 @@ var kill9 = {};
 
 var express = require('express');
 var crypto = require('crypto');
-var bodyParser = require('body-parser');
 var packageJson = require('./package.json');
 
 function sendFeedback(res, status, location, message){
@@ -22,8 +21,6 @@ function sendFeedback(res, status, location, message){
 
 kill9 = function kill9(opts){
     var killer=express();
-    killer.use(bodyParser.json());
-    killer.use(bodyParser.urlencoded({extended:true}));
     if(opts.log){
         console.log('kill-9 installed: '+opts.log+' v'+packageJson.version);
         console.log('pid='+pid);
@@ -40,29 +37,23 @@ kill9 = function kill9(opts){
             throw new Error('kill-9: options.'+info.locationOpt+(has?' is only for redirect':' required'));
         }
     });
-    if(! ('masterPass' in opts)) { throw new Error('kill-9: options.materPass is required'); }
-    var locationPost = '/'+(opts.locationPost||'kill-9');
-    killer.use(express.static(__dirname+'/dist/'));
-    killer.get('/'+(opts.statement||'kill-9'),function killer(req,res){
+    if(! ('master-pass' in opts)) { throw new Error('kill-9: options.master-pass is required'); }
+    var statement = '/'+(opts.statement||'kill-9');
+    var locationPost = (opts.locationPost||statement);
+    killer.get(statement,function killer(req,res){
         if(req.query.pid==pid){
             var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
             kill9.postParams = {random:Math.random(), hash:crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex')};
             res.header('Content-Type', 'text/html; charset=utf-8');
-            var html = '<html><body>\n'+
-                       '<script type="text/javascript" src="/md5.js"></script>\n'+
-                       '<form method="post" action="'+locationPost+'">\n'+
-                       (opts.messageConfirm || 'confirm kill-9')+'<br>\n'+
-                       '<input id="masterpass_in" type="password" name="masterpass_in"  autofocus /><br>\n'+
-                       '<input id="masterpass" type="hidden" name="masterpass"  autofocus /><br>\n'+
-                       '<input type="submit" name="submit" value="'+(opts.messageSubmit||'Ok')+'" /><br>\n'+
+            var safe=function safe(message){
+                return message.replace(/'"<>/g,'');
+            }
+            var html = '<form method="post" action="'+safe(locationPost)+'">\n'+
+                       (safe(opts.messageConfirm || 'confirm kill-9'))+'<br>\n'+
+                       '<input type="password" name="masterpass"  autofocus /><br>\n'+
+                       '<input type="submit" name="submit" value="'+safe(opts.messageSubmit||'Ok')+'" /><br>\n'+
                        '<input type="hidden" name="params" value=\''+JSON.stringify(kill9.postParams)+'\' /><br>\n'+
-                       '<input type="hidden" name="confirmTimeout" value="'+confirmTimeout+'" /><br>\n'+
-                       '</form>\n'+
-                       '<script type="text/javascript">'+
-                       'document.getElementById("masterpass_in").onblur = function() { '+
-                       'document.getElementById("masterpass").value = CryptoJS.MD5(this.value); }'+
-                       '</script>\n'+
-                       '</body></html>';
+                       '</form>\n';
             res.end(html);
         }else{
             sendFeedback(
@@ -74,18 +65,15 @@ kill9 = function kill9(opts){
         }
     });
     killer.post(locationPost, function(req,res){
-        //try { console.log(req.body); } catch(e) { console.log("post error", e); }
         try {
             var vars = req.body;
-            ['masterpass', 'submit', 'params', 'confirmTimeout'].forEach(function(pVar) {
+            ['masterpass', 'params'].forEach(function(pVar) {
                 if(!(pVar in vars)) { throw new Error('tainted vars'); }
             });
             if(JSON.stringify(kill9.postParams) != vars.params) { throw new Error('tainted content'); }
             var timeout = new Date().getTime();
             if(timeout > parseInt(vars.confirmTimeout)) { throw new Error('request timeout'); }
-            var masterpassHash = crypto.createHash('md5').update(opts.masterPass).digest('hex');
-            //console.log("posted pass", vars.masterpass, "masterpassHash", masterpassHash);
-            if(vars.masterpass !== masterpassHash) { throw new Error('authentication error'); }
+            if(vars.masterpass !== opts['master-pass']) { throw new Error('authentication error'); }
             sendFeedback(
                 res, 
                 opts.statusKilled||kill9.defaults.statusKilled, 

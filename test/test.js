@@ -1,190 +1,204 @@
+"use strict";
 
-var assert = require('assert');
-var http = require('http');
+var expect = require('expect.js');
+var crypto = require('crypto');
+var express = require('express');
 var request = require('supertest');
+var sinon = require('sinon');
 var kill9 = require('..');
 var killedExitCode=false;
-var crypto = require('crypto');
+var bodyParser = require('body-parser');
+var Promises = require('promise-plus');
 
 describe('kill9()', function(){
-  function createPostForm(exVar) {
-      var obj = {
-        'masterpass':crypto.createHash('md5').update('secret').digest('hex'),
-        'submit':'Ok',
-        'params':JSON.stringify(kill9.postParams),
-        'confirmTimeout':(new Date().getTime()+60*1000).toString()
-     };
-     if(exVar) {
-         if(exVar.value !== '') {
-             obj[exVar.name] = exVar.value;
-         } else {
-             delete obj[exVar.name];
-         }
-     }
-     return obj;
-  }
-  describe('basic operations', function(){
-    var server;
-    before(function () {
-      killedExitCode = false;
-      server = createServer({
-        exitCode:15,
-        messageKilled:"yeah'killed",
-        masterPass:'secret',
-        process:{pid:444, exit:function(code){ killedExitCode = code; }}
-      });
-    });
-    
-    it('should kill if pid match', function(done){
-      request(server)
-      .get('/kill-9?pid=444')
-      .expect('Content-Type', 'text/html; charset=utf-8')
-      .end(function(err, res){
-          if(err) { return done(err); }
-          request(server)
-          .post('/kill-9')
-          .send(createPostForm())
-          .expect('Content-Type', 'text/plain; charset=utf-8')
-          .expect(200, "yeah'killed")
-          .end(function(err, res){
-                if (err) { return done(err); }
-                assert.equal(killedExitCode,15);
-                done();
-          });
-      });
-    });
-
-    it('should not kill if pid not match', function(done){
-      request(server)
-      .get('/kill-9?pid=99')
-      .expect('Content-Type', 'text/plain; charset=utf-8')
-      .expect(404, 'kill -9 unknown', done);
-    });
-
-    it('should pass if statement not present', function(done){
-      request(server)
-      .get('/other')
-      .expect(404, 'sorry!', done);
-    });
-    
-    it('should log to console.log', function(){
-      var save_log=console.log;
-      var messages={
-        "kill-9 installed. true":0,
-        "pid=444":0
-      };
-      var log_mock=function(message){
-        if(message in messages){
-            messages[message]++;
+    function createPostForm(params, exVar) {
+        var obj = {
+            masterpass: 'secret',
+            params: params
+        };
+        if(exVar) {
+            if(exVar.value !== '') {
+                obj[exVar.name] = exVar.value;
+            } else {
+                delete obj[exVar.name];
+            }
         }
-      };
-      console.log=log_mock;
-      createServer({log:true, process:{pid:444}, masterPass:'secret'});
-      console.log=save_log;
-      assert.deepEqual(messages,{
-        "kill-9 installed. true":1,
-        "pid=444":1
-      });
-    });
-    
-  [
-    {name:'masterpass', err:'tainted vars'},
-    {name:'params', err:'tainted content', value:'asdfasdflñj-asdf'},
-    {name:'confirmTimeout', err:'request timeout', value:'0'},
-    {name:'masterpass', err:'authentication error', value:'not a secret'}
-  ].forEach(function(wrongVar) {
-        it('should fail with wrong form variable "'+wrongVar.name+'"', function(done){
-          request(server)
-          .get('/kill-9?pid=444')
-          .end(function(err, res){
-              if(err) { return done(err); }
-              request(server)
-              .post('/kill-9')
-              .send(createPostForm(wrongVar))
-              .expect(404, "kill -9 "+wrongVar.err)
-              .end(function(err, res){
+        return obj;
+    }
+    describe('basic operations', function(){
+        var server;
+        var server_get = function server_get(s){ server = s };
+        before(function (done) {
+            killedExitCode = false;
+            createServer({
+                exitCode:15,
+                messageKilled:"yeah'killed",
+                "master-pass":'secret',
+                process:{pid:444, exit:function(code){ killedExitCode = code; }}
+            }).then(server_get).then(done,done);
+        });
+        it('should kill if pid match', function(done){
+            request(server)
+            .get('/kill-9?pid=444')
+            .expect('Content-Type', 'text/html; charset=utf-8')
+            .end(function(err, res){
+                if(err) { return done(err); }
+                var params = res.text.match(/name="params" value='({[^}]*})'/)[1];
+                request(server)
+                .post('/kill-9')
+                .type('form')
+                .send({params:params, masterpass:'secret'})
+                .expect('Content-Type', 'text/plain; charset=utf-8')
+                // .expect(200, "yeah'killed")
+                .end(function(err, res){
                     if (err) { return done(err); }
+                    if(killedExitCode!=15 || res.status!=200){
+                        console.log("NOT EXPECTED",res.text);
+                    }
+                    expect(killedExitCode).to.eql(15);
                     done();
-              });
-          });
+                });
+            });
+        });
+        it('should not kill if pid not match', function(done){
+            request(server)
+            .get('/kill-9?pid=99')
+            .expect('Content-Type', 'text/plain; charset=utf-8')
+            .expect(404, 'kill -9 unknown', done);
+        });
+        it('should pass if statement not present', function(done){
+            request(server)
+            .get('/other')
+            .expect(404, /Cannot GET .other/, done);
+        });    
+        it('should log to console.log', function(done){
+            var messages={
+                "kill-9 installed. true":0,
+                "pid=444":0
+            };
+            sinon.stub(console,'log',function(){});
+            createServer({log:true, process:{pid:444}, "master-pass":'secret'}).then(server_get).then(function(){
+                expect(console.log.args).to.eql([
+                    [ 'kill-9 installed: true v'+require('../package.json').version ],
+                    [ 'pid=undefined' ]
+                ]);
+            }).then(function(){
+                console.log.restore();
+            }).then(done,done);
+        });
+        [
+            {name:'masterpass', err:'tainted vars'},
+            {name:'params', err:'tainted content', value:'asdfasdflñj-asdf'},
+            {name:'masterpass', err:'authentication error', value:'not a secret'}
+        ].forEach(function(wrongVar) {
+            it('should fail with wrong form variable "'+wrongVar.name+'" with value '+wrongVar.value, function(done){
+                request(server)
+                .get('/kill-9?pid=444')
+                .end(function(err, res){
+                    var params = res.text.match(/name="params" value='({[^}]*})'/)[1];
+                    if(err) { return done(err); }
+                    request(server)
+                    .post('/kill-9')
+                    .type('form')
+                    .send(createPostForm(params, wrongVar))
+                    .expect(404, "kill -9 "+wrongVar.err)
+                    .end(function(err, res){
+                        if (err) { return done(err); }
+                        done();
+                    });
+                });
+            });
+        });
+    })
+
+    describe('exceptional operations', function(){
+        it('must ensure location for redirects', function(){
+            expect(function(){ kill9({statusKilled:301}) }).to.throwException(/options.location required/);
+        });
+        it('must ensure location for bad redirects', function(){
+            expect(function(){ kill9({statusBad:301}) }).to.throwException(/options.locationBad required/);
+        });
+        it('must ensure redirects if option location present', function(){
+            expect(function(){ kill9({location:"other_site.kom"}) }).to.throwException(/options.location is only for redirect/);
+        });
+        it('must ensure redirects if option location present', function(){
+            expect(function(){ kill9({locationBad:"other_site.kom"}) }).to.throwException(/options.locationBad is only for redirect/);
+        });
+        it('must fail if no master-pass is provided', function(){
+            expect(function(){ kill9({}) }).to.throwException(/options.master-pass is required/);
         });
     });
-  })
-
-  describe('exceptional operations', function(){
-    it('must ensure location for redirects', function(){
-      assert.throws(function(){ kill9({statusKilled:301}) }, /options.location required/);
-    });
-    it('must ensure location for bad redirects', function(){
-      assert.throws(function(){ kill9({statusBad:301}) }, /options.locationBad required/);
-    });
-    it('must ensure redirects if option location present', function(){
-      assert.throws(function(){ kill9({location:"other_site.kom"}) }, /options.location is only for redirect/);
-    });
-    it('must ensure redirects if option location present', function(){
-      assert.throws(function(){ kill9({locationBad:"other_site.kom"}) }, /options.locationBad is only for redirect/);
-    });
-    it('must fail if no masterPass is provided', function(){
-      assert.throws(function(){ kill9({}) }, /options.materPass is required/);
-    });
-  });
   
-  describe('redirect operations', function(){
-    var createRedirectServer;
-    before(function () {
-        createRedirectServer = function(reference){
-            kill9.defaults.exitCode=999;
-            return createServer({
-                process:{pid:555, exit:function(code){ reference.code = code; }},
-                statusKilled:300,
-                location:"other_site.kom/?killed=1",
-                statusBad:303,
-                locationBad:"other_site.kom/?killed=0",
-                masterPass:'secret'
-            });
-        };
+    describe('redirect operations', function(){
+        var createRedirectServer;
+        before(function () {
+            createRedirectServer = function(reference){
+                kill9.defaults.exitCode=999;
+                return createServer({
+                    process:{pid:555, exit:function(code){ reference.code = code; }},
+                    statusKilled:300,
+                    location:"other_site.kom/?killed=1",
+                    statusBad:303,
+                    locationBad:"other_site.kom/?killed=0",
+                    "master-pass":'secret'
+                });
+            };
+        });
+        it('should redirect killed', function(done){
+            var reference={};
+            var server;
+            createRedirectServer(reference).then(function(server){ 
+                request(server)
+                .get('/kill-9?pid=555')
+                .end(function(err, res){
+                    if(err) { return done(err); }
+                    var params = res.text.match(/name="params" value='({[^}]*})'/)[1];
+                    request(server)
+                    .post('/kill-9')
+                    .type('form')
+                    .send(createPostForm(params))
+                    .expect('Location', 'other_site.kom/?killed=1')
+                    .expect(300)
+                    .end(function(err, res){
+                          if (err) { return done(err); }
+                          expect(reference.code).to.eql(999);
+                          done();
+                    });
+                });
+            }).catch(done);;
+        });
+        it('should redirect bad kills', function(done){
+            var reference={code:'untouched'};
+            var server;
+            createRedirectServer(reference).then(function(server){ 
+                request(server)
+                .get('/kill-9?pid=777')
+                .expect('Location', 'other_site.kom/?killed=0')
+                .expect(303)
+                .end(function(err, res){
+                    if (err) return done(err);
+                    expect(reference.code).to.eql('untouched');
+                    done();
+                });
+            }).catch(done);
+        });
     });
-
-    it('should redirect killed', function(done){
-      var reference={};
-      request(createRedirectServer(reference))
-      .get('/kill-9?pid=555')
-      .end(function(err, res){
-          if(err) { return done(err); }
-          request(createRedirectServer(reference))
-          .post('/kill-9')
-          .send(createPostForm())
-          .expect('Location', 'other_site.kom/?killed=1')
-          .expect(300)
-          .end(function(err, res){
-                if (err) { return done(err); }
-                assert.equal(reference.code,999);
-                done();
-          });
-      });
-    });
-    it('should redirect bad kills', function(done){
-      var reference={code:'untouched'};
-      request(createRedirectServer(reference))
-      .get('/kill-9?pid=777')
-      .expect('Location', 'other_site.kom/?killed=0')
-      .expect(303)
-      .end(function(err, res){
-        if (err) return done(err);
-        assert.equal(reference.code,'untouched');
-        done();
-      });
-    });
-  });
 });
 
-function createServer(opts, fn) {
-  var _serve = kill9(opts);
-  return http.createServer(function (req, res) {
-    fn && fn(req, res);
-    _serve(req, res, function (err) {
-      res.statusCode = err ? (err.status || 500) : 404;
-      res.end(err ? err.stack : 'sorry!');
+var INTERNAL_PORT = 54925;
+
+function createServer(opts) {
+    return Promises.make(function(resolve, reject){
+        try{
+            var app = express();
+            app.use(bodyParser.urlencoded({extended:true})); 
+            app.use(kill9(opts));
+            var server = app.listen(INTERNAL_PORT++,function(){
+                resolve(server);
+            });
+        }catch(err){
+            reject(err)
+        }
     });
-  });
 }
+

@@ -90,8 +90,6 @@ http://thesite.kom/kill-9?pid=12345
 ```
 <!--lang:es-->
 
-### options
-
 opciones  | tipo    | valor predeterminado       | detalles
 ----------|---------|-------------|-------------------------
 statement | text    | "kill-9"    | La sentencia que hay que poner en la url. 
@@ -106,8 +104,6 @@ messageBad    | text    | "kill -9 unknown" | El mensaje a mostrar cuando *pid* 
 process       | object  | process           | El objeto proceso (para text, se le puede pasar un objecto *mock*)
 
 <!--lang:en--]
-
-### options
 
 option        | type    | default value | details
 --------------|---------|---------------|-------------------------
