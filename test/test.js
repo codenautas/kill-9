@@ -68,7 +68,7 @@ var Promises = require('promise-plus');
                     expect(method).to.eql(VERB);
                     send(res, server, {params:'default', masterpass:'secret'})
                     .expect('Content-Type', 'text/plain; charset=utf-8')
-                    // .expect(200, "yeah'killed")
+                    .expect(200, "yeah'killed")
                     .end(function(err, res){
                         if (err) { return done(err); }
                         if(killedExitCode!=15 || res.status!=200){
@@ -125,7 +125,6 @@ var Promises = require('promise-plus');
                 });
             })
         })
-
         describe('exceptional operations', function(){
             it('must ensure location for redirects', function(){
                 expect(function(){ kill9({statusKilled:301}) }).to.throwException(/options.location required/);
@@ -143,7 +142,6 @@ var Promises = require('promise-plus');
                 expect(function(){ kill9({}) }).to.throwException(/options.master-pass is required/);
             });
         });
-      
         describe('redirect operations', function(){
             var createRedirectServer;
             before(function () {
@@ -193,6 +191,41 @@ var Promises = require('promise-plus');
                         done();
                     });
                 }).catch(done);
+            });
+        });
+        describe('timeout situations', function(){
+            var createTimeoutServer;
+            before(function () {
+                createTimeoutServer = function(reference){
+                    kill9.defaults.exitCode=999;
+                    return createServer({
+                        process:{pid:888, exit:function(code){ reference.code = code; }},
+                        "master-pass":'secret',
+                        statusBad:403,
+                        confirmTimeout:reference.confirmTimeout
+                    });
+                };
+            });
+            it('should not kill if timeout', function(done){
+                var reference={code:'untouched', confirmTimeout:100};
+                var server;
+                createTimeoutServer(reference).then(function(server){ 
+                    request(server)
+                    .get(prefix+'/kill-9?pid=888')
+                    .expect('Content-Type', 'text/html; charset=utf-8')
+                    .end(function(err, res){
+                        if(err) { return done(err); }
+                        Promises.sleep(110).then(function(){
+                            send(res, server, {params:'default', masterpass:'secret'})
+                            .expect(403)
+                            .end(function(err, res){
+                                if (err) { return done(err); }
+                                expect(killedExitCode).to.eql(15);
+                                done();
+                            });
+                        }).catch(done);
+                    });
+                });
             });
         });
     }); 

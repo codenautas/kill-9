@@ -9,6 +9,8 @@ var express = require('express');
 var crypto = require('crypto');
 var packageJson = require('./package.json');
 
+var limitTime;
+
 function sendFeedback(res, status, location, message){
     res.status(status);
     if(location){
@@ -46,8 +48,8 @@ kill9 = function kill9(opts){
                 if(!(pVar in vars)) { throw new Error('tainted vars'); }
             });
             if(JSON.stringify(kill9.postParams) != vars.params) { throw new Error('tainted content'); }
-            var timeout = new Date().getTime();
-            if(timeout > parseInt(vars.confirmTimeout)) { throw new Error('request timeout'); }
+            var actualTime = new Date().getTime();
+            if(actualTime >= limitTime) { throw new Error('request timeout'); }
             if(vars.masterpass !== opts['master-pass']) { throw new Error('authentication error'); }
             sendFeedback(
                 res, 
@@ -69,7 +71,7 @@ kill9 = function kill9(opts){
         if(req.query.params){
             receive(req.query, res);
         }else if(req.query.pid==pid){
-            var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
+            limitTime = new Date().getTime()+(opts.confirmTimeout || (60 * 1000));
             kill9.postParams = {random:Math.random(), hash:crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex')};
             res.header('Content-Type', 'text/html; charset=utf-8');
             var safe=function safe(message){
