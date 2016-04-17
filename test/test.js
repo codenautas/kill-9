@@ -16,7 +16,8 @@ var Promises = require('promise-plus');
         function createPostForm(exVar) {
             var obj = {
                 masterpass: 'secret',
-                params: 'default'
+                params: 'default',
+                submit: 'Ok',
             };
             if(exVar) {
                 if(exVar.value !== undefined) {
@@ -66,7 +67,7 @@ var Promises = require('promise-plus');
                     var method = res.text.match(/method="([^"]*)"/)[1];
                     expect(actionLocation).to.eql(prefix+'/kill-9');
                     expect(method).to.eql(VERB);
-                    send(res, server, {params:'default', masterpass:'secret'})
+                    send(res, server, createPostForm())
                     .expect('Content-Type', 'text/plain; charset=utf-8')
                     .expect(200, "yeah'killed")
                     .end(function(err, res){
@@ -216,7 +217,7 @@ var Promises = require('promise-plus');
                     .end(function(err, res){
                         if(err) { return done(err); }
                         Promises.sleep(110).then(function(){
-                            send(res, server, {params:'default', masterpass:'secret'})
+                            send(res, server, createPostForm())
                             .expect(403)
                             .end(function(err, res){
                                 if (err) { return done(err); }

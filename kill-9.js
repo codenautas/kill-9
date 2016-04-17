@@ -44,8 +44,10 @@ kill9 = function kill9(opts){
     var locationPost = (opts.locationPost||statement);
     function receive(vars, res){
         try {
-            ['masterpass', 'params'].forEach(function(pVar) {
-                if(!(pVar in vars)) { throw new Error('tainted vars'); }
+            ['masterpass', 'params', 'submit'].forEach(function(pVar) {
+                if(!(pVar in vars)) { 
+                    throw new Error('tainted vars'); 
+                }
             });
             if(JSON.stringify(kill9.postParams) != vars.params) { throw new Error('tainted content'); }
             var actualTime = new Date().getTime();
