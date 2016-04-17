@@ -40,33 +40,8 @@ kill9 = function kill9(opts){
     if(! ('master-pass' in opts)) { throw new Error('kill-9: options.master-pass is required'); }
     var statement = '/'+(opts.statement||'kill-9');
     var locationPost = (opts.locationPost||statement);
-    killer.get(statement,function killer(req,res){
-        if(req.query.pid==pid){
-            var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
-            kill9.postParams = {random:Math.random(), hash:crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex')};
-            res.header('Content-Type', 'text/html; charset=utf-8');
-            var safe=function safe(message){
-                return message.replace(/'"<>/g,'');
-            }
-            var html = '<form method="post" action="'+safe(locationPost)+'">\n'+
-                       (safe(opts.messageConfirm || 'confirm kill-9'))+'<br>\n'+
-                       '<input type="password" name="masterpass"  autofocus /><br>\n'+
-                       '<input type="submit" name="submit" value="'+safe(opts.messageSubmit||'Ok')+'" /><br>\n'+
-                       '<input type="hidden" name="params" value=\''+JSON.stringify(kill9.postParams)+'\' /><br>\n'+
-                       '</form>\n';
-            res.end(html);
-        }else{
-            sendFeedback(
-                res, 
-                opts.statusBad||kill9.defaults.statusBad,
-                opts.locationBad,
-                opts.messageBad||'kill -9 unknown'
-            );
-        }
-    });
-    killer.post(locationPost, function(req,res){
+    function receive(vars, res){
         try {
-            var vars = req.body;
             ['masterpass', 'params'].forEach(function(pVar) {
                 if(!(pVar in vars)) { throw new Error('tainted vars'); }
             });
@@ -89,6 +64,40 @@ kill9 = function kill9(opts){
                 'kill -9 '+e.message
             );
         }
+    }
+    killer.get(statement,function killer(req,res){
+        if(req.query.params){
+            receive(req.query, res);
+        }else if(req.query.pid==pid){
+            var confirmTimeout = (opts.confirmTimeout || new Date().getTime()+(60 * 1000)).toString();
+            kill9.postParams = {random:Math.random(), hash:crypto.createHash('md5').update((new Date().getTime() + process.pid).toString()).digest('hex')};
+            res.header('Content-Type', 'text/html; charset=utf-8');
+            var safe=function safe(message){
+                return message.replace(/'"<>/g,'');
+            }
+            var method = 'post';
+            if(req.body === undefined){
+                method = 'get';
+                locationPost = statement;
+            }
+            var html = '<form method="'+method+'" action="'+safe(req.baseUrl+locationPost)+'">\n'+
+               (safe(opts.messageConfirm || 'confirm kill-9'))+'<br>\n'+
+               '<input type="password" name="masterpass"  autofocus /><br>\n'+
+               '<input type="submit" name="submit" value="'+safe(opts.messageSubmit||'Ok')+'" /><br>\n'+
+               '<input type="hidden" name="params" value=\''+JSON.stringify(kill9.postParams)+'\' /><br>\n'+
+               '</form>\n';
+            res.end(html);
+        }else{
+            sendFeedback(
+                res, 
+                opts.statusBad||kill9.defaults.statusBad,
+                opts.locationBad,
+                opts.messageBad||'kill -9 unknown'
+            );
+        }
+    });
+    killer.post(locationPost, function(req,res){
+        receive(req.body, res);
     });
     return killer;
 };
