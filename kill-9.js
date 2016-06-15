@@ -78,7 +78,7 @@ kill9 = function kill9(opts){
             res.header('Content-Type', 'text/html; charset=utf-8');
             var safe=function safe(message){
                 return message.replace(/'"<>/g,'');
-            }
+            };
             var method = 'post';
             if(req.body === undefined){
                 method = 'get';

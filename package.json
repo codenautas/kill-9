@@ -60,6 +60,7 @@
     "stability": "extending",
     "test-appveyor": true,
     "type": "lib",
-    "coverage": 100
+    "coverage": 100,
+    "ecmaVersion": 6
   }
 }
