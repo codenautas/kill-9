@@ -62,8 +62,6 @@ Once installed you can kill the process typing "kill sentence" in the navigator.
 http://thesite.kom/kill-9?pid=12345
 ```
 
-### options
-
 option        | type    | default value | details
 --------------|---------|---------------|-------------------------
 statement     | text    | "kill-9"      | The statement that you must type in the url.
