@@ -1,47 +1,44 @@
 {
   "name": "kill-9",
   "description": "A way for kill node server from client navigator",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "author": "Emilio Platzer <emilioplatzer@outlook.com>",
-  "license": "GPL-2.0",
+  "license": "MIT",
   "repository": "codenautas/kill-9",
   "main": "kill-9.js",
-  "files": [ "kill-9.js", "docs", "LEEME.md" ],
-  "dependencies": {
-  },
+  "files": [
+    "kill-9.js",
+    "example",
+    "dist"
+  ],
+  "dependencies": {},
   "devDependencies": {
-    "body-parser": "~1.15.0",
+    "body-parser": "~1.18.3",
     "expect.js": "~0.3.1",
-    "express": "~4.13.4",
-    "lodash": "~4.11.1", 
-    "istanbul": "~0.4.3",
-    "mocha": "~2.4.5",
-    "sinon": "~1.17.3",
-    "supertest": "~1.2.0",
-    
+    "express": "~4.16.4",
+    "lodash": "~4.17.11",
+    "istanbul": "~0.4.5",
+    "mocha": "~5.2.0",
+    "sinon": "~7.0.0",
+    "supertest": "~3.3.0",
     "promise-plus": "0.0.6"
   },
   "engines": {
     "node": ">= 0.12.0"
   },
   "scripts": {
-    "test": "mocha --reporter spec --bail --check-leaks test/",
-    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks test/",
+    "test": "mocha --reporter spec --bail --check-leaks --exit test/",
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks --exit test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --check-leaks --exit test/",
     "start": "node example/server.js"
   },
-  "files": [
-    "kill-9.js",
-    "example",
-    "dist"
-    ],
   "jshintConfig": {
     "asi": false,
     "forin": true,
     "curly": true,
     "esversion": 6
   },
-  "eslintConfig":{
+  "eslintConfig": {
     "env": {
       "node": false
     },

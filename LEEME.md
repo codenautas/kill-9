@@ -15,9 +15,7 @@ a way to kill node process from client navigator. Something like http://yoursite
 [![linux](https://img.shields.io/travis/codenautas/kill-9/master.svg)](https://travis-ci.org/codenautas/kill-9)
 [![windows](https://ci.appveyor.com/api/projects/status/github/codenautas/kill-9?svg=true)](https://ci.appveyor.com/project/codenautas/kill-9)
 [![coverage](https://img.shields.io/coveralls/codenautas/kill-9/master.svg)](https://coveralls.io/r/codenautas/kill-9)
-[![climate](https://img.shields.io/codeclimate/github/codenautas/kill-9.svg)](https://codeclimate.com/github/codenautas/kill-9)
 [![dependencies](https://img.shields.io/david/codenautas/kill-9.svg)](https://david-dm.org/codenautas/kill-9)
-[![qa-control](http://codenautas.com/github/codenautas/kill-9.svg)](http://codenautas.com/github/codenautas/kill-9)
 
 <!--multilang buttons-->
 

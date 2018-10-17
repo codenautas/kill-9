@@ -96,7 +96,7 @@ var Promises = require('promise-plus');
                     "kill-9 installed. true":0,
                     "pid=444":0
                 };
-                sinon.stub(console,'log',function(){});
+                sinon.stub(console, 'log').callsFake(function(){})
                 createServer({log:true, process:{pid:444}, "master-pass":'secret'}).then(server_get).then(function(){
                     expect(console.log.args).to.eql([
                         [ 'kill-9 installed: true v'+require('../package.json').version ],
